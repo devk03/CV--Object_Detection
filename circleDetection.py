@@ -60,6 +60,7 @@ while cap.isOpened():
         area = cv2.contourArea(c)
         if (area > 500):
             ratio = math.sqrt(area)/peri
+            '''
             square_slack = 0.05
             triangle_slack = 0.03
             cv2.drawContours(img, c, -1, (255, 0, 0), 7)
@@ -74,6 +75,19 @@ while cap.isOpened():
             else:
                 cv2.putText(img, str(sides), [
                     x + w - 100, y + 60], cv2.FONT_HERSHEY_COMPLEX, 0.7, (0, 255, 0), 2)
+            '''
+            crop=imgDil[y:y+h, x:x+w]
+
+            maxDim=max(w,h)
+            minDim=min(w,h)
+            dimRatio = w/h
+            if area / (w*h) > 0.5 and ((dimRatio>0.9 and dimRatio<2.1) or (1/dimRatio>0.9 or 1/dimRatio<2.1)):
+                circles=cv2.HoughCircles(crop, cv2.HOUGH_GRADIENT,1.2, maxDim, None, 100, 80, int(minDim/2-minDim/15), int(maxDim))
+                if circles is not None:
+                    circles = np.round(circles[0, :]).astype("int");
+                    for(a, b, r) in circles:
+                        cv2.circle(img, (int(x+w/2), int(y+h/2)), r, (255,0,0), 7)
+
     imgStack = stackImages(0.3,([imgDil],[img]))
     cv2.imshow('img', imgStack)
     k = cv2.waitKey(27) & 0xff
